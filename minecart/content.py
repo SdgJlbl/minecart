@@ -274,10 +274,14 @@ class Image(GraphicsObject):
         lti = pdfminer.layout.LTImage("", self.obj, self.get_bbox())
         # The PDF spec allows non-JPEG images to have 1, 2, 4, 8 or 16 bits
         if isinstance(lti.colorspace, list):
-            colorspace = str(lti.colorspace[0])[1:]  # strip leading /
+            colorspace = lti.colorspace[0]
+            if isinstance(colorspace, pdfminer.pdftypes.PDFObjRef):
+                colorspace = str(colorspace.resolve())
+            colorspace = str(colorspace)[1:]  # strip leading /
+            if colorspace[0] == "'":  # strip surrounding '
+                colorspace = colorspace[1:-1]
         else:
             colorspace = str(lti.colorspace)[1:]  # strip leading /
-        from IPython.core.debugger import set_trace; set_trace()
         if colorspace in ('DeviceRGB', 'CalRGB', 'RGB'):
             mode = "RGB"
             samples = 3
